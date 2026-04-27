@@ -1,0 +1,474 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,300;6..12,400;6..12,500;6..12,600;6..12,700;6..12,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'main/css/main.css' %}">
+    <title>Новости - Приют "Дружок"</title>
+    <style>
+        /* ========== СТРАНИЦА НОВОСТЕЙ ========== */
+        .news-page {
+            padding: 8rem 0 5rem;
+            background: #FFF7E8;
+            min-height: 100vh;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 40px;
+            font-weight: 800;
+            color: #2D2D2D;
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            max-width: 1200px;
+            margin: 0 auto 3rem auto;
+            font-size: 1.125rem;
+            line-height: 1.8;
+            color: #2D2D2D;
+            text-align: center;
+            font-weight: 400;
+        }
+
+        /* Сетка новостей - одна колонка */
+        .news-grid {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Карточка новости */
+        .news-card {
+            background: white;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .news-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border-color: rgba(255, 138, 92, 0.2);
+        }
+
+        .news-image {
+            width: 200px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .news-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .news-card:hover .news-image img {
+            transform: scale(1.05);
+        }
+
+        /* Карточка без фото - отступы слева */
+        .news-card.no-image .news-info {
+            padding-left: 1.5rem;
+        }
+
+        .news-info {
+            padding: 1.5rem 1.5rem 1.5rem 0;
+            flex: 1;
+        }
+
+        .news-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #2D2D2D;
+            margin-bottom: 0.5rem;
+        }
+
+        .news-date {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #FF8A5C;
+            margin-bottom: 1rem;
+        }
+
+        .news-date svg {
+            width: 16px;
+            height: 16px;
+            stroke: #FF8A5C;
+        }
+
+        .news-preview {
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            color: rgba(45, 45, 45, 0.7);
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .btn-read-more {
+            background: transparent;
+            border: none;
+            color: #FF8A5C;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0;
+            transition: gap 0.3s ease;
+            font-family: 'Nunito Sans', sans-serif;
+        }
+
+        .btn-read-more:hover {
+            gap: 0.75rem;
+        }
+
+        .btn-read-more svg {
+            width: 16px;
+            height: 16px;
+            stroke: #FF8A5C;
+        }
+
+        /* Нет новостей */
+        .no-news {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 1.5rem;
+            color: rgba(45, 45, 45, 0.7);
+        }
+
+        /* ========== ПОПАП НОВОСТИ ========== */
+        .news-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .news-modal-content {
+            background: white;
+            margin: 5% auto;
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 800px;
+            position: relative;
+            animation: slideIn 0.3s ease;
+            overflow: hidden;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .news-modal-header {
+            padding: 2rem 2rem 0;
+        }
+
+        .news-modal-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #2D2D2D;
+            margin-bottom: 0.75rem;
+            padding-right: 2rem;
+        }
+
+        /* Дата без иконки */
+        .news-modal-date {
+            font-size: 0.875rem;
+            color: #FF8A5C;
+            margin-bottom: 1rem;
+        }
+
+        .news-modal-image {
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+        }
+
+        .news-modal-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .news-modal-body {
+            padding: 1.5rem 2rem 2rem;
+        }
+
+        .news-modal-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #2D2D2D;
+            white-space: pre-wrap;
+        }
+
+        .modal-close-icon {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s ease;
+            z-index: 10;
+            background: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close-icon:hover {
+            color: #FF8A5C;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* ========== АДАПТИВНОСТЬ ========== */
+        @media (max-width: 768px) {
+            .news-page {
+                padding: 6rem 0 3rem;
+            }
+
+            .page-title {
+                font-size: 32px;
+            }
+
+            .news-card {
+                flex-direction: column;
+            }
+
+            .news-image {
+                width: 100%;
+                height: 200px;
+            }
+
+            /* Карточка без фото на мобильных */
+            .news-card.no-image .news-info {
+                padding-left: 1.5rem;
+            }
+
+            .news-info {
+                padding: 1.5rem;
+            }
+
+            .news-modal-title {
+                font-size: 1.35rem;
+            }
+
+            .news-modal-header {
+                padding: 1.5rem 1.5rem 0;
+            }
+
+            .news-modal-body {
+                padding: 1rem 1.5rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .news-modal-content {
+                margin: 10% auto;
+                width: 95%;
+            }
+
+            .news-modal-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========== МЕНЮ ========== -->
+    <div class="menu">
+        <div class="menu-container">
+            <div class="menu_logo"></div>
+            <span class="nazvanie">Приют “Дружок”</span>
+            <div class="menu-buttons">
+                <button class="menu_glav" onclick="window.location.href='/'">Главная</button>
+                <button class="menu_history" onclick="window.location.href='/#about'">О приюте</button>
+                <button class="menu_animals" onclick="window.location.href='/animals/'">Наши животные</button>
+                <button class="menu_help" onclick="window.location.href='/#help'">Помощь приюту</button>
+                <button class="menu_news" onclick="window.location.href='/news/'">Новости</button>
+                <button class="menu_contact" onclick="window.location.href='/#contact'">Контакты</button>
+                <button class="menu_document">Отчетность</button>
+            </div>
+            <button class="menu-toggle" aria-label="Меню">☰</button>
+        </div>
+    </div>
+
+    <!-- ========== СТРАНИЦА НОВОСТЕЙ ========== -->
+    <section class="news-page">
+        <div class="container">
+            <h1 class="page-title">Новости приюта</h1>
+            <p class="page-subtitle">
+                Следите за последними событиями и новостями нашего приюта
+            </p>
+
+            <!-- Сетка новостей -->
+            <div class="news-grid">
+                {% for news in news_list %}
+                <div class="news-card {% if not news.image %}no-image{% endif %}" onclick="openNewsModal({{ news.id }})">
+                    {% if news.image %}
+                    <div class="news-image">
+                        <img src="{% static 'main/images/' %}{{ news.image }}" alt="{{ news.title }}">
+                    </div>
+                    {% endif %}
+                    <div class="news-info">
+                        <h3 class="news-title">{{ news.title }}</h3>
+                        <div class="news-date">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            {{ news.date|date:"d.m.Y" }}
+                        </div>
+                        <p class="news-preview">{{ news.text|truncatechars:150 }}</p>
+                        <button class="btn-read-more" onclick="event.stopPropagation(); openNewsModal({{ news.id }})">
+                            Читать далее
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="no-news">
+                    <p>Пока нет новостей. Следите за обновлениями!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== ПОПАП НОВОСТИ ========== -->
+    <div id="newsModal" class="news-modal">
+        <div class="news-modal-content">
+            <span class="modal-close-icon" onclick="closeNewsModal()">&times;</span>
+            <div class="news-modal-header">
+                <h2 id="modalNewsTitle" class="news-modal-title"></h2>
+                <div id="modalNewsDate" class="news-modal-date">
+                    <span></span>
+                </div>
+            </div>
+            <div id="modalNewsImage" class="news-modal-image" style="display: none;">
+                <img src="" alt="">
+            </div>
+            <div class="news-modal-body">
+                <p id="modalNewsText" class="news-modal-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Данные о новостях из Django
+        const newsData = [
+            {% for news in news_list %}
+            {
+                id: {{ news.id }},
+                title: "{{ news.title|escapejs }}",
+                text: "{{ news.text|escapejs|linebreaksbr }}",
+                date: "{{ news.date|date:'d.m.Y' }}",
+                image: "{% if news.image %}{% static 'main/images/' %}{{ news.image }}{% else %}{% endif %}"
+            },
+            {% endfor %}
+        ];
+
+        // Открытие попапа новости
+        function openNewsModal(id) {
+            const news = newsData.find(n => n.id === id);
+            if (!news) return;
+
+            document.getElementById('modalNewsTitle').textContent = news.title;
+            document.getElementById('modalNewsDate').querySelector('span').textContent = news.date;
+            document.getElementById('modalNewsText').innerHTML = news.text;
+
+            const imageContainer = document.getElementById('modalNewsImage');
+            const image = imageContainer.querySelector('img');
+
+            if (news.image && news.image !== '') {
+                image.src = news.image;
+                imageContainer.style.display = 'block';
+            } else {
+                imageContainer.style.display = 'none';
+            }
+
+            document.getElementById('newsModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Закрытие попапа
+        function closeNewsModal() {
+            document.getElementById('newsModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Закрытие по клику вне попапа
+        window.onclick = function(event) {
+            const modal = document.getElementById('newsModal');
+            if (event.target === modal) {
+                closeNewsModal();
+            }
+        }
+
+        // Добавляем класс no-image для карточек без фото при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.news-card').forEach(card => {
+                const image = card.querySelector('.news-image');
+                if (!image || image.querySelector('img') && !image.querySelector('img').src) {
+                    card.classList.add('no-image');
+                }
+            });
+        });
+
+        // Мобильное меню
+        const menuToggle = document.querySelector('.menu-toggle');
+        const menuButtons = document.querySelector('.menu-buttons');
+
+        if (menuToggle && menuButtons) {
+            menuToggle.addEventListener('click', () => {
+                menuButtons.classList.toggle('active');
+            });
+        }
+    </script>
+
+</body>
+</html>

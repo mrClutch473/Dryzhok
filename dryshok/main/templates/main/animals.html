@@ -1,0 +1,597 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,300;6..12,400;6..12,500;6..12,600;6..12,700;6..12,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'main/css/main.css' %}">
+    <title>Наши животные - Приют "Дружок"</title>
+    <style>
+        /* ========== СТРАНИЦА ЖИВОТНЫХ ========== */
+        .animals-page {
+            padding: 8rem 0 5rem;
+            background: #FFF7E8;
+            min-height: 100vh;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 40px;
+            font-weight: 800;
+            color: #2D2D2D;
+            margin-bottom: 1rem;
+        }
+
+        .page-subtitle {
+            max-width: 1200px;
+            margin: 0 auto 3rem auto;
+            font-size: 1.125rem;
+            line-height: 1.8;
+            color: #2D2D2D;
+            text-align: center;
+            font-weight: 400;
+        }
+
+        /* Фильтры - увеличенные */
+        .animals-filters {
+            display: flex;
+            justify-content: center;
+            gap: 1.25rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.875rem 2rem;
+            border: 2px solid #FF8A5C;
+            background: transparent;
+            color: #FF8A5C;
+            font-family: 'Nunito Sans', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #FF8A5C;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Сетка карточек */
+        .animals-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+
+        /* Карточка животного */
+        .animal-card {
+            background: white;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+        }
+
+        .animal-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border-color: rgba(255, 138, 92, 0.2);
+        }
+
+        .animal-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+        }
+
+        .animal-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .animal-card:hover .animal-image img {
+            transform: scale(1.05);
+        }
+
+        .animal-info {
+            padding: 1.5rem;
+        }
+
+        .animal-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #2D2D2D;
+            margin-bottom: 0.5rem;
+        }
+
+        .animal-details {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+            color: #2D2D2D;
+        }
+
+        .animal-details span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: #2D2D2D;
+        }
+
+        .animal-details svg {
+            width: 16px;
+            height: 16px;
+            stroke: #FF8A5C;
+        }
+
+        .animal-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .tag {
+            background: rgba(255, 138, 92, 0.1);
+            color: #FF8A5C;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .btn-detail {
+            width: 100%;
+            padding: 0.75rem;
+            background: transparent;
+            border: 2px solid #FF8A5C;
+            color: #FF8A5C;
+            border-radius: 9999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Nunito Sans', sans-serif;
+        }
+
+        .btn-detail:hover {
+            background: #FF8A5C;
+            color: white;
+        }
+
+        /* ========== ПОПАП ========== */
+        .animal-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .animal-modal-content {
+            background: white;
+            margin: 5% auto;
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 1000px;
+            position: relative;
+            animation: slideIn 0.3s ease;
+            overflow: hidden;
+        }
+
+        .animal-modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .animal-modal-image {
+            background: #f5f5f5;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .animal-modal-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .animal-modal-info {
+            padding: 2rem 2rem 2rem 0;
+        }
+
+        .animal-modal-name {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #2D2D2D;
+            margin-bottom: 1rem;
+        }
+
+        .animal-modal-details {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .animal-modal-details .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            color: #2D2D2D;
+        }
+
+        .animal-modal-details svg {
+            width: 20px;
+            height: 20px;
+            stroke: #FF8A5C;
+        }
+
+        .animal-modal-description {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #2D2D2D;
+            margin-bottom: 2rem;
+        }
+
+        .animal-modal-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-adopt {
+            background: #FF8A5C;
+            color: white;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-adopt:hover {
+            background: #FF7043;
+            transform: scale(1.05);
+        }
+
+        .btn-close-modal {
+            background: transparent;
+            border: 2px solid #FF8A5C;
+            color: #FF8A5C;
+            padding: 0.875rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-close-modal:hover {
+            background: #FF8A5C;
+            color: white;
+        }
+
+        .modal-close-icon {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s ease;
+            z-index: 10;
+            background: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close-icon:hover {
+            color: #FF8A5C;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* ========== АДАПТИВНОСТЬ ========== */
+        @media (max-width: 1024px) {
+            .animals-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .animals-page {
+                padding: 6rem 0 3rem;
+            }
+
+            .page-title {
+                font-size: 32px;
+            }
+
+            .animals-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+
+            .animal-modal-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .animal-modal-image {
+                min-height: 300px;
+            }
+
+            .animal-modal-info {
+                padding: 1.5rem;
+            }
+
+            .animal-modal-name {
+                font-size: 1.5rem;
+            }
+
+            .filter-btn {
+                padding: 0.6rem 1.25rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .animals-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========== МЕНЮ ========== -->
+    <div class="menu">
+        <div class="menu-container">
+            <div class="menu_logo"></div>
+            <span class="nazvanie">Приют “Дружок”</span>
+            <div class="menu-buttons">
+                <button class="menu_glav" onclick="window.location.href='/'">Главная</button>
+                <button class="menu_history" onclick="window.location.href='/#about'">О приюте</button>
+                <button class="menu_animals" onclick="window.location.href='/animals/'">Наши животные</button>
+                <button class="menu_help" onclick="window.location.href='/#help'">Помощь приюту</button>
+                <button class="menu_news">Новости</button>
+                <button class="menu_contact" onclick="window.location.href='/#contact'">Контакты</button>
+                <button class="menu_document">Отчетность</button>
+            </div>
+            <button class="menu-toggle" aria-label="Меню">☰</button>
+        </div>
+    </div>
+
+    <!-- ========== СТРАНИЦА ЖИВОТНЫХ ========== -->
+    <section class="animals-page">
+        <div class="container">
+            <h1 class="page-title">Наши питомцы</h1>
+            <p class="page-subtitle">
+                Познакомьтесь с нашими подопечными. Каждый из них ждет своего любящего хозяина!
+            </p>
+
+            <!-- Фильтры -->
+            <div class="animals-filters">
+                <button class="filter-btn active" data-filter="all">Все</button>
+                <button class="filter-btn" data-filter="Dog">Собаки</button>
+                <button class="filter-btn" data-filter="Cat">Кошки</button>
+                <button class="filter-btn" data-filter="Men">Мальчики</button>
+                <button class="filter-btn" data-filter="Women">Девочки</button>
+            </div>
+
+            <!-- Сетка карточек -->
+            <div class="animals-grid" id="animalsGrid">
+                {% for animal in animals %}
+                <div class="animal-card" data-tip="{{ animal.tip }}" data-pol="{{ animal.pol }}">
+                    <div class="animal-image">
+                        <img src="{% static 'main/images/' %}{{ animal.photo }}" alt="{{ animal.name }}">
+                    </div>
+                    <div class="animal-info">
+                        <h3 class="animal-name">{{ animal.name }}</h3>
+                        <div class="animal-details">
+                            <span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                {{ animal.age }}
+                            </span>
+                            <span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                {{ animal.get_pol_display }}
+                            </span>
+                        </div>
+                        <div class="animal-tags">
+                            <span class="tag">{{ animal.get_tip_display }}</span>
+                        </div>
+                        <button class="btn-detail" onclick="openAnimalModal({{ animal.id }})">Подробнее</button>
+                    </div>
+                </div>
+                {% empty %}
+                <p style="text-align: center; grid-column: span 4;">Пока нет добавленных животных</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== ПОПАП ========== -->
+    <div id="animalModal" class="animal-modal">
+        <div class="animal-modal-content">
+            <span class="modal-close-icon" onclick="closeAnimalModal()">&times;</span>
+            <div class="animal-modal-grid">
+                <div class="animal-modal-image">
+                    <img id="modalImage" src="" alt="">
+                </div>
+                <div class="animal-modal-info">
+                    <h2 id="modalName" class="animal-modal-name"></h2>
+                    <div class="animal-modal-details">
+                        <span class="detail-item" id="modalAge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            <span></span>
+                        </span>
+                        <span class="detail-item" id="modalPol">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <span></span>
+                        </span>
+                        <span class="detail-item" id="modalTip">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10 21h4"/>
+                                <path d="M12 18v3"/>
+                                <path d="M12 3a9 9 0 0 0-9 9c0 2.4.8 4.7 2 6.5"/>
+                                <path d="M12 3a9 9 0 0 1 9 9c0 2.4-.8 4.7-2 6.5"/>
+                            </svg>
+                            <span></span>
+                        </span>
+                    </div>
+                    <p id="modalText" class="animal-modal-description"></p>
+                    <div class="animal-modal-actions">
+                        <button class="btn-adopt" onclick="adoptAnimal()">Хочу забрать домой</button>
+                        <button class="btn-close-modal" onclick="closeAnimalModal()">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Данные о животных из Django
+        const animalsData = [
+            {% for animal in animals %}
+            {
+                id: {{ animal.id }},
+                name: "{{ animal.name|escapejs }}",
+                age: "{{ animal.age|escapejs }}",
+                pol: "{{ animal.get_pol_display|escapejs }}",
+                tip: "{{ animal.get_tip_display|escapejs }}",
+                text: "{{ animal.text|escapejs }}",
+                photo: "{% static 'main/images/' %}{{ animal.photo }}"
+            },
+            {% endfor %}
+        ];
+
+        // Фильтрация карточек
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const animalCards = document.querySelectorAll('.animal-card');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const filter = btn.getAttribute('data-filter');
+
+                animalCards.forEach(card => {
+                    if (filter === 'all') {
+                        card.style.display = 'block';
+                    } else {
+                        const tip = card.getAttribute('data-tip');
+                        const pol = card.getAttribute('data-pol');
+                        if (tip === filter || pol === filter) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+
+        // Открытие попапа
+        function openAnimalModal(id) {
+            const animal = animalsData.find(a => a.id === id);
+            if (!animal) return;
+
+            document.getElementById('modalImage').src = animal.photo;
+            document.getElementById('modalName').textContent = animal.name;
+            document.getElementById('modalAge').querySelector('span').textContent = animal.age;
+            document.getElementById('modalPol').querySelector('span').textContent = animal.pol;
+            document.getElementById('modalTip').querySelector('span').textContent = animal.tip;
+            document.getElementById('modalText').textContent = animal.text;
+
+            document.getElementById('animalModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Закрытие попапа
+        function closeAnimalModal() {
+            document.getElementById('animalModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Забрать домой
+        function adoptAnimal() {
+            window.location.href = '/#contact';
+        }
+
+        // Закрытие по клику вне попапа
+        window.onclick = function(event) {
+            const modal = document.getElementById('animalModal');
+            if (event.target === modal) {
+                closeAnimalModal();
+            }
+        }
+
+        // Мобильное меню
+        const menuToggle = document.querySelector('.menu-toggle');
+        const menuButtons = document.querySelector('.menu-buttons');
+
+        if (menuToggle && menuButtons) {
+            menuToggle.addEventListener('click', () => {
+                menuButtons.classList.toggle('active');
+            });
+        }
+    </script>
+
+</body>
+</html>
