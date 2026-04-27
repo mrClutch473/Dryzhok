@@ -1,0 +1,6 @@
+dryshok/dryshok/settings.py
+pycache/
+*.pyc
+venv/
+db.sqlite3
+staticfiles/
