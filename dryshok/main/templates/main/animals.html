@@ -181,6 +181,8 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.8);
             animation: fadeIn 0.3s ease;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .animal-modal-content {
@@ -329,6 +331,14 @@
             }
         }
 
+        /* Класс для блокировки скролла body */
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
         /* ========== АДАПТИВНОСТЬ ========== */
         @media (max-width: 1024px) {
             .animals-grid {
@@ -370,6 +380,19 @@
                 padding: 0.6rem 1.25rem;
                 font-size: 0.875rem;
             }
+
+            .animal-modal-content {
+                margin: 0;
+                width: 100%;
+                max-width: 100%;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+
+            .modal-close-icon {
+                top: 0.5rem;
+                right: 0.5rem;
+            }
         }
 
         @media (max-width: 480px) {
@@ -390,7 +413,7 @@
     <div class="menu">
         <div class="menu-container">
             <div class="menu_logo"></div>
-            <span class="nazvanie">Приют “Дружок”</span>
+            <span class="nazvanie">Приют "Дружок"</span>
             <div class="menu-buttons">
                 <button class="menu_glav" onclick="window.location.href='/#first_block'">Главная</button>
                 <button class="menu_history" onclick="window.location.href='/#about'">О приюте</button>
@@ -516,7 +539,7 @@
                 tip: "{{ animal.get_tip_display|escapejs }}",
                 text: "{{ animal.text|escapejs }}",
                 photo: "{% static 'main/images/' %}{{ animal.photo }}"
-            },
+            }{% if not forloop.last %},{% endif %}
             {% endfor %}
         ];
 
@@ -547,6 +570,9 @@
             });
         });
 
+        // Переменная для сохранения позиции скролла
+        let scrollPosition = 0;
+
         // Открытие попапа
         function openAnimalModal(id) {
             const animal = animalsData.find(a => a.id === id);
@@ -559,19 +585,40 @@
             document.getElementById('modalTip').querySelector('span').textContent = animal.tip;
             document.getElementById('modalText').textContent = animal.text;
 
-            document.getElementById('animalModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
+            // Сохраняем текущую позицию скролла
+            scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+
+            // Показываем модальное окно
+            const modal = document.getElementById('animalModal');
+            modal.style.display = 'block';
+
+            // Блокируем скролл body с сохранением позиции
+            document.body.classList.add('modal-open');
+            document.body.style.top = '-' + scrollPosition + 'px';
+
+            // Прокручиваем модальное окно вверх
+            modal.scrollTop = 0;
         }
 
         // Закрытие попапа
         function closeAnimalModal() {
-            document.getElementById('animalModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+            const modal = document.getElementById('animalModal');
+            modal.style.display = 'none';
+
+            // Восстанавливаем скролл body
+            document.body.classList.remove('modal-open');
+            document.body.style.top = '';
+
+            // Возвращаемся на сохраненную позицию
+            window.scrollTo(0, scrollPosition);
         }
 
         // Забрать домой
         function adoptAnimal() {
-            window.location.href = '/#contact';
+            closeAnimalModal();
+            setTimeout(function() {
+                window.location.href = '/#contact';
+            }, 300);
         }
 
         // Закрытие по клику вне попапа
@@ -580,14 +627,24 @@
             if (event.target === modal) {
                 closeAnimalModal();
             }
-        }
+        };
+
+        // Закрытие по клавише Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('animalModal');
+                if (modal.style.display === 'block') {
+                    closeAnimalModal();
+                }
+            }
+        });
 
         // Мобильное меню
         const menuToggle = document.querySelector('.menu-toggle');
         const menuButtons = document.querySelector('.menu-buttons');
 
         if (menuToggle && menuButtons) {
-            menuToggle.addEventListener('click', () => {
+            menuToggle.addEventListener('click', function() {
                 menuButtons.classList.toggle('active');
             });
         }
