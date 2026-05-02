@@ -3,6 +3,7 @@
 **Версия:** 2.1  
 **Разработчик:** mrClutch473  
 **Язык:** Python, HTML, CSS, JavaScript
+
 **Ссылка:** https://dryzhok.ru/
 
 **Стек:**
